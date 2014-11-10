@@ -1,29 +1,25 @@
 Kafka and Akka for high-performance real-time behavioral data
-========================================================
-Alex Cozzi
-
-2014-11-10
+===========================================================
+by Alex Cozzi, 2014-11-10
 
 
 
-Overview of the talk
-========================================================
+##Overview of the talk
 
 * Benefits of the queue-based architecture.
 * Actor computation model.
 * Listening to behavioral events.
 
-
+--------------------------------
 Kafka
 ===========================================================
 What is it: Publish-subscribe messaging rethought as a distributed commit log
 
 ![producer consumer](http://kafka.apache.org/images/producer_consumer.png)
-
 ![topic anatomy](http://kafka.apache.org/images/log_anatomy.png)
 ![consumer groups](http://kafka.apache.org/images/consumer-groups.png)
 
-
+-----------------------------
 Actor model (Hewitt, 1973)
 ====================
 
@@ -31,6 +27,7 @@ Actor model (Hewitt, 1973)
 * Create a finite number of new actors
 * Designate the behavior to be used for the next message it receives
 
+-----------------------------
 Akka-Kafka Integration
 =====================
 
@@ -54,20 +51,6 @@ val consumerProps = AkkaConsumerProps.forContext(
       commitConfig = CommitConfig())
 ```
 
-Inititialization
-================
-```
-kafka.consumer {
-  auto.offset.reset = "smallest"  # default: "largest"
-}
-```
-```scala
-ZkUtils.maybeDeletePath(zk, s"/consumers/$group")
-
-val consumer = new AkkaConsumer(consumerProps)
-
-consumer.start()
-```
 
 Process messages
 ===============
@@ -177,7 +160,7 @@ Message Bus
   
 ```
 
-Message Bus Implemenetation
+Message Bus Implementation
 ============================
 ```scala
 class ScanningBusImpl extends ActorEventBus with ScanningClassification with PredicateClassifier {
@@ -198,6 +181,23 @@ class ScanningBusImpl extends ActorEventBus with ScanningClassification with Pre
   }
 }
 ```
+
+Recovery and Performance Testing
+================
+```
+kafka.consumer {
+  auto.offset.reset = "smallest"  # default: "largest"
+}
+```
+
+```scala
+ZkUtils.maybeDeletePath(zk, s"/consumers/$group")
+
+val consumer = new AkkaConsumer(consumerProps)
+
+consumer.start()
+```
+
 
 Performance
 ========================
