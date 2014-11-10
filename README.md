@@ -10,26 +10,31 @@ by Alex Cozzi, 2014-11-10
 * Actor computation model.
 * Listening to behavioral events.
 
---------------------------------
+
 Kafka
 ===========================================================
 What is it: Publish-subscribe messaging rethought as a distributed commit log
 
 ![producer consumer](http://kafka.apache.org/images/producer_consumer.png)
+
 ![topic anatomy](http://kafka.apache.org/images/log_anatomy.png)
+
 ![consumer groups](http://kafka.apache.org/images/consumer-groups.png)
 
------------------------------
+
 Actor model (Hewitt, 1973)
 ====================
+A deceptively simple computational model
 
+An actor can:
 * Send a finite number of messages to other actors
 * Create a finite number of new actors
 * Designate the behavior to be used for the next message it receives
 
------------------------------
+
 Akka-Kafka Integration
 =====================
+Converts kafka messages into Akka messages
 
 https://github.com/sclasen/akka-kafka
 
@@ -42,8 +47,8 @@ Configuration
 val consumerProps = AkkaConsumerProps.forContext(
       context = context,
       zkConnect = "zookeeper cluster",
-      topic = "SaaS topic",
-      group = hostname,
+      topic = "topic name",
+      group = "my listener group",
       streams = 1, 
       keyDecoder = new DefaultDecoder(),
       msgDecoder = new DefaultDecoder(),
