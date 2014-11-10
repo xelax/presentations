@@ -1,24 +1,26 @@
 Kafka and Akka for high-performance real-time behavioral data
 ========================================================
-author: Alex Cozzi
-date: 2014-11-10
+Alex Cozzi
+2014-11-10
 
-Overview
+
+
+Overview of the talk
 ========================================================
 
-* Queue-based architecture.
+* Benefits of the queue-based architecture.
 * Actor computation model.
-* 
+* Listening to behavioral events.
 
 
 Kafka
 ===========================================================
-Publish-subscribe messaging rethought as a distributed commit log
+What is it: Publish-subscribe messaging rethought as a distributed commit log
 
-![producer consumer](figs/producer_consumer.png)
+![producer consumer](http://kafka.apache.org/images/producer_consumer.png)
 
-![topic anatomy](figs/log_anatomy.png)
-![consumer groups](figs/consumer-groups.png)
+![topic anatomy](http://kafka.apache.org/images/log_anatomy.png)
+![consumer groups](http://kafka.apache.org/images/consumer-groups.png)
 
 
 Actor model (Hewitt, 1973)
@@ -53,9 +55,9 @@ val consumerProps = AkkaConsumerProps.forContext(
 
 Inititialization
 ================
-```
+```json
 kafka.consumer {
-  auto.offset.reset = "smallest"
+  auto.offset.reset = "smallest" // default: "largest"
 }
 ```
 ```scala
@@ -124,23 +126,33 @@ Mediator (2)
 ========
 Actor as a state machine
 ```scala
-def receive = {
- case msg: SaasPulsarEvent =>
-   ctx.responder ! MessageChunk(toSSE(msg)).withAck(ChunkSent)
-   context.become(skipping)
+class Mediator(ctx: RequestContext) {
+  context.actorSelection("/user/pscraper/pulsar") ! Register(self)
 
- case ev: Http.ConnectionClosed =>
-   context.actorSelection("/user/pscraper/pulsar") ! Deregister(self)
-   self ! PoisonPill
-   context.become(skipping)
- }
+  val responseStart = HttpResponse(entity = HttpEntity(`text/event-stream`, "event: start\n"))
 
-def skipping: Actor.Receive = {
-  case ChunkSent => context.unbecome()
-  case msg: SaasPulsarEvent => // skip
-  case ev: Http.ConnectionClosed =>
-    context.actorSelection("/user/pscraper/pulsar") ! Deregister(self)
-    self ! PoisonPill
+  ctx.responder ! ChunkedResponseStart(responseStart)
+
+  def toSSE(msg: String) = "event: message\ndata: " + msg.replace("\n", "\ndata: ") + "\n\n"
+
+  def receive = {
+    case msg: SaasPulsarEvent =>
+      ctx.responder ! MessageChunk(toSSE(eventMapper(msg))).withAck(ChunkSent)
+      // switch to skipping mode until we get confirmation that the chunck has been received. 
+      context.become(skipping)
+
+    case ev: Http.ConnectionClosed =>
+      context.actorSelection("/user/pscraper/pulsar") ! Deregister(self)
+      self ! PoisonPill
+      context.become(skipping)
+  }
+
+  def skipping: Actor.Receive = {
+    case ChunkSent => context.unbecome()
+    case msg: SaasPulsarEvent =>  // do nothing
+    case ev: Http.ConnectionClosed =>
+      context.actorSelection("/user/pscraper/pulsar") ! Deregister(self)
+      self ! PoisonPill
   }
 }
 ```
