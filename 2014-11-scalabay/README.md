@@ -67,8 +67,9 @@ class PulsarListener extends Actor {
 
 REST API
 ==========
-Server-side Events
+How to create a stream of server-side Events (SSE) using (http://spray.io)[spray]
 
+we delegate the stream handling to another actor
 ```scala
 class PscraperSvc extends RouteDefinition {
   def route =
@@ -80,7 +81,9 @@ class PscraperSvc extends RouteDefinition {
 }
 ```
 
-Mediator
+
+
+Mediator (simplified)
 ========
 
 ```scala
@@ -103,7 +106,7 @@ class Mediator(ctx: RequestContext) extends Actor {
 ```
 
 
-Mediator (2)
+Mediator, with throttling
 ========
 Actor as a state machine
 ```scala
@@ -138,7 +141,7 @@ class Mediator(ctx: RequestContext) {
 }
 ```
 
-Message Bus
+Distributiong messages: The Akka Message Bus
 =================
 ```scala
   // a message bus to deliver the messages to all interested mediators
