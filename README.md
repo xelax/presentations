@@ -1,6 +1,7 @@
 Kafka and Akka for high-performance real-time behavioral data
 ========================================================
 Alex Cozzi
+
 2014-11-10
 
 
@@ -156,3 +157,63 @@ class Mediator(ctx: RequestContext) {
   }
 }
 ```
+
+Message Bus
+=================
+```scala
+  // a message bus to deliver the messages to all interested mediators
+  val messageBus = new ScanningBusImpl()
+
+  def commonBehavior: Actor.Receive = {
+    case Register(listener, classifier) =>
+      messageBus.subscribe(listener, classifier)
+
+    case Deregister(listener) =>
+      messageBus.unsubscribe(listener)
+  }
+
+  def receive = commonBehavior orElse {
+  }
+  
+```
+
+Message Bus Implemenetation
+============================
+```scala
+class ScanningBusImpl extends ActorEventBus with ScanningClassification with PredicateClassifier {
+  type Event = SaasPulsarEvent
+
+  // is needed for determining matching classifiers and storing them in an
+  // ordered collection
+  override protected def compareClassifiers(a: Classifier, b: Classifier): Int = a.hashCode().compareTo(b.hashCode())
+
+  // determines whether a given classifier shall match a given event; it is invoked
+  // for each subscription for all received events, hence the name of the classifier
+  override protected def matches(classifier: Classifier, event: Event): Boolean = classifier(event)
+
+  // will be invoked for each event for all subscribers which registered themselves
+  // for a classifier matching this event
+  override protected def publish(event: Event, subscriber: Subscriber): Unit = {
+    subscriber ! event
+  }
+}
+```
+
+Performance
+========================
+
+configuration    | messages/sec
+-----------------|-------------
+spray json 1.2.6 | 1K
+spray json 1.3.0 | 22K 
+lazy parsing     | 34K
+play json        | 36K 
+
+
+Conclusions
+=======================
+* Queue based architecture are simple and performant
+* No worries about recovery
+* Easy performance testing 
+* Akka is an excellent match for Kafka processing
+* 
