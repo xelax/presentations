@@ -364,4 +364,5 @@ Conclusions
 Next Steps
 ====================
 * Look carefully at [reactive streams](http://www.reactive-streams.org)
-* Statistical sketches [
+* Statistical sketches, like [simmer](https://github.com/avibryant/simmer), but for message streams.
+* How to  parse Scala code at run-time?
