@@ -22,27 +22,10 @@ What is it: Publish-subscribe messaging rethought as a distributed commit log
 ![consumer groups](http://kafka.apache.org/images/consumer-groups.png)
 
 
-Actor model (Hewitt, 1973)
-====================
-A deceptively simple computational model
-
-An actor can:
-* Send a finite number of messages to other actors
-* Create a finite number of new actors
-* Designate the behavior to be used for the next message it receives
-
-
 Akka-Kafka Integration
 =====================
-Converts kafka messages into Akka messages
+Receive messages from Kafka using https://github.com/sclasen/akka-kafka
 
-https://github.com/sclasen/akka-kafka
-
-
-
-Receive messages from Kafka
-================================
-Configuration
 ```scala
 val consumerProps = AkkaConsumerProps.forContext(
       context = context,
@@ -55,6 +38,15 @@ val consumerProps = AkkaConsumerProps.forContext(
       receiver = pulsarListener,
       commitConfig = CommitConfig())
 ```
+
+Akka, an implementation of the Actor model (Hewitt, 1973)
+====================
+A deceptively simple computational model
+
+An actor can:
+* Send a finite number of messages to other actors
+* Create a finite number of new actors
+* Designate the behavior to be used for the next message it receives
 
 
 Process messages
