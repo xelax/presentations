@@ -160,6 +160,113 @@ Distributiong messages: The Akka Message Bus
   
 ```
 
+Actor as State machines (2)
+=========================
+how to maintain state
+
+```
+class PulsarListener extends Actor {
+  var kafkaConsumer : AkkaConsumer[Array[Byte], Array[Byte]]] = null
+  
+  def receive =  {
+    case StartListening =>
+      kafkaConsumer = createConsumer()
+      context.become(listening)
+  }
+
+  def listening: Actor.Receive =  {
+    case b: Array[Byte] =>
+        val event = PulsarDecoder.decode(b)
+        sender ! StreamFSM.Processed
+    
+    case StopListening =>
+      kakfaConsumer = null
+      context.unbecome()
+  }      
+}
+```
+
+But this is ugly! And we do not want `null`s in Scala.
+Instead using argument passing:
+
+```
+class PulsarListener extends Actor {
+
+  def receive =  {
+    case StartListening =>
+      context.become(listening(createConsumer(context)))
+  }
+
+  def listening(consumer: AkkaConsumer[Array[Byte], Array[Byte]]]): Actor.Receive =  {
+    case b: Array[Byte] =>
+        val event = PulsarDecoder.decode(b)
+        sender ! StreamFSM.Processed
+    
+    case StopListening =>
+      context.unbecome()
+  }      
+}
+```
+
+
+
+Behavior stacking
+======================
+```scala
+class PulsarListener extends Actor {
+  // a message bus to deliver the messages to all interested mediators
+  val messageBus = new ScanningBusImpl()
+
+  def commonBehavior: Actor.Receive = {
+    case Register(listener, classifier) =>
+      messageBus.subscribe(listener, classifier)
+
+    case Deregister(listener) =>
+      messageBus.unsubscribe(listener)
+  }
+
+  def receive = commonBehavior orElse {
+    case StartListening(pool, streams) =>
+      sender ! s"Started Listening to $pool"
+      context.become(listening(Map(pool -> createConsumer(context, self, pool, streams))), discardOld = true)
+
+    case StopListening(pool) => sender ! s"$pool already stopped"
+  }
+
+  def listening(consumers: Map[String, AkkaConsumer[Array[Byte], Array[Byte]]]): Actor.Receive = commonBehavior orElse {
+    case b: Array[Byte] =>
+        val event = PulsarDecoder.decode(b)
+        sender ! StreamFSM.Processed
+
+    case StartListening(pool, streams) =>
+      if (consumers.contains(pool))
+        sender ! s"Already Listening to $pool:  ${consumers.keySet}"
+      else {
+        val newConsumers = consumers + (pool -> createConsumer(context, self, pool, streams))
+        sender ! s"Now Listening to ${newConsumers.keySet}"
+        context.become(listening(newConsumers), discardOld = true)
+      }
+
+    case StopListening(pool) =>
+      if (consumers.contains(pool)) {
+        consumers(pool).stop()
+        val newConsumers = consumers - pool
+
+        if (newConsumers.nonEmpty) {
+          sender ! s"Now Listening to ${newConsumers.keySet}"
+          context.become(listening(newConsumers), discardOld = true)
+        } else {
+          sender ! s"Stopped Listening to $pool. Not listening to anything: ${newConsumers.keySet}"
+          context.become(receive, discardOld = true)
+        }
+      } else {
+        sender ! s"No such pool. Currently listening to: ${consumers.keySet}"
+      }
+  }
+}
+```
+
+
 Message Bus Implementation
 ============================
 ```scala
