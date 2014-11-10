@@ -56,9 +56,9 @@ val consumerProps = AkkaConsumerProps.forContext(
 
 Inititialization
 ================
-```json
+```
 kafka.consumer {
-  auto.offset.reset = "smallest" // default: "largest"
+  auto.offset.reset = "smallest"  # default: "largest"
 }
 ```
 ```scala
@@ -216,4 +216,3 @@ Conclusions
 * No worries about recovery
 * Easy performance testing 
 * Akka is an excellent match for Kafka processing
-* 
