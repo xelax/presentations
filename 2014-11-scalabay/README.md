@@ -300,13 +300,25 @@ trait Instrumented extends InstrumentedBuilder with FutureMetrics {
 class PulsarListener extends Actor with ActorLogging with Instrumented {
   private[this] val messages = metrics.meter("kafka-messages")
   private[this] val messageLag = metrics.histogram("message-lag")
+  private var lastLag = 0L
+  private var lastTimestamp = 0L
+  private var lastMessage = SaasPulsarEvent()
 
-  def listening(consumers: Map[String, AkkaConsumer[Array[Byte], Array[Byte]]]): Actor.Receive = commonBehavior orElse {
-    case Status => sender ! s"listening to ${consumers.keySet}. ${messages.oneMinuteRate} messages/sec in the last minute, current lag: $lastLag mean ${messageLag.mean / 1000.0} lag in seconds, timestamp ${new java.util.Date(lastTimestamp)}\n"
+  def receive {
+    case Status => 
+      sender ! s"listening to ${consumers.keySet}. ${messages.oneMinuteRate} messages/sec in the last minute, current lag: $lastLag mean ${messageLag.mean / 1000.0} lag in seconds, timestamp ${new java.util.Date(lastTimestamp)}\n"
 
-    case b: Array[Byte] =>
-        messages.mark()
-        ...
+   case b: Array[Byte] =>
+      messages.mark()
+      val event = PulsarDecoder.decode(b)
+      lastMessage = event
+      lastTimestamp = event.timestamp
+      lastLag = (System.currentTimeMillis() - lastTimestamp)
+      messageLag += lastLag
+      messageBus.publish(event)
+      sender ! StreamFSM.Processed
+  }
+}
 ```
 
 Recovery and Performance Testing
