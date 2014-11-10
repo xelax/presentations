@@ -67,7 +67,7 @@ class PulsarListener extends Actor {
 
 REST API
 ==========
-How to create a stream of server-side Events (SSE) using (http://spray.io)[spray]
+How to create a stream of server-side Events (SSE) using [spray](http://spray.io).
 
 we delegate the stream handling to another actor
 ```scala
@@ -80,8 +80,6 @@ class PscraperSvc extends RouteDefinition {
     }
 }
 ```
-
-
 
 Mediator (simplified)
 ========
@@ -208,8 +206,6 @@ class PulsarListener extends Actor {
 }
 ```
 
-
-
 Behavior stacking
 ======================
 ```scala
@@ -266,10 +262,8 @@ class PulsarListener extends Actor {
 }
 ```
 
-
 Event Bus Implementation
 ============================
-http://doc.akka.io/docs/akka/snapshot/java/event-bus.html
 
 ```scala
 class ScanningBusImpl extends ActorEventBus with ScanningClassification with PredicateClassifier {
@@ -291,8 +285,34 @@ class ScanningBusImpl extends ActorEventBus with ScanningClassification with Pre
 }
 ```
 
+Instrumentation
+===============
+How to measure the performance of your Akka app?
+
+I used the scala wrapper for (Coda Hale metrics)[https://github.com/erikvanoosten/metrics-scala], but I also found (kamon)[http://kamon.io] very intersting.
+
+Be careful of the cost of logging!
+```scala
+trait Instrumented extends InstrumentedBuilder with FutureMetrics {
+  val metricRegistry = PulsarListener.metricRegistry
+}
+
+class PulsarListener extends Actor with ActorLogging with Instrumented {
+  private[this] val messages = metrics.meter("kafka-messages")
+  private[this] val messageLag = metrics.histogram("message-lag")
+
+  def listening(consumers: Map[String, AkkaConsumer[Array[Byte], Array[Byte]]]): Actor.Receive = commonBehavior orElse {
+    case Status => sender ! s"listening to ${consumers.keySet}. ${messages.oneMinuteRate} messages/sec in the last minute, current lag: $lastLag mean ${messageLag.mean / 1000.0} lag in seconds, timestamp ${new java.util.Date(lastTimestamp)}\n"
+
+    case b: Array[Byte] =>
+        messages.mark()
+        ...
+```
+
 Recovery and Performance Testing
 ================
+How do you recover from system crashes? 
+How fast can you go?
 ```
 kafka.consumer {
   auto.offset.reset = "smallest"  # default: "largest"
@@ -308,6 +328,7 @@ consumer.start()
 ```
 
 
+
 Performance
 ========================
 
@@ -321,7 +342,13 @@ play json        | 36K
 
 Conclusions
 =======================
-* Queue based architecture are simple and performant
-* No worries about recovery
-* Easy performance testing 
-* Akka is an excellent match for Kafka processing
+* Queue based architectures are simple, performant.
+* Recovery from crashes is seamless.
+* Easy performance testing.
+* Akka is an excellent match for Kafka processing.
+
+
+Next Steps
+====================
+* Look carefully at [reactive streams](http://www.reactive-streams.org)
+* Statistical sketches [
