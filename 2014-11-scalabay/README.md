@@ -185,7 +185,8 @@ class PulsarListener extends Actor {
 ```
 
 But this is ugly! And we do not want `null`s in Scala.
-Instead using argument passing:
+Can we use a more functional style instead? 
+Of course:
 
 ```
 class PulsarListener extends Actor {
@@ -289,7 +290,7 @@ Instrumentation
 ===============
 How to measure the performance of your Akka app?
 
-I used the scala wrapper for (Coda Hale metrics)[https://github.com/erikvanoosten/metrics-scala], but I also found (kamon)[http://kamon.io] very intersting.
+I used the scala wrapper for [Coda Hale metrics](https://github.com/erikvanoosten/metrics-scala), but I also found [Kamon](http://kamon.io) very intersting but still maturing.
 
 Be careful of the cost of logging!
 ```scala
