@@ -269,7 +269,7 @@ class ScanningBusImpl extends ActorEventBus with ScanningClassification with Pre
   }
 }
 ```
-Conclusions
+What have we done so far?
 ================
 
 We did quite a lot with just 3 differnt kind of actors:
