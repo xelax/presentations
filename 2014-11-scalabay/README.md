@@ -15,7 +15,7 @@ Kafka
 ===========================================================
 What is it: Publish-subscribe messaging rethought as a distributed commit log
 
-Really great introduction: (The Log: What every software engineer should know about real-time data's unifying abstraction)[http://engineering.linkedin.com/distributed-systems/log-what-every-software-engineer-should-know-about-real-time-datas-unifying].
+Really great introduction: [The Log: What every software engineer should know about real-time data's unifying abstraction](http://engineering.linkedin.com/distributed-systems/log-what-every-software-engineer-should-know-about-real-time-datas-unifying).
 
 ![producer consumer](http://kafka.apache.org/images/producer_consumer.png)
 
