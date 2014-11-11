@@ -270,6 +270,13 @@ class ScanningBusImpl extends ActorEventBus with ScanningClassification with Pre
   }
 }
 ```
+Conclusions
+================
+We just have 3 actors:
+1. One to manage the REST Api.
+2. One to listen to Kafka events and distribute them.
+3. One to mediate live connections.
+ 
 
 Instrumentation
 ===============
