@@ -31,7 +31,7 @@ An actor can:
 * Create a finite number of new actors
 * Designate the behavior to be used for the next message it receives
 
-Make sure you watch the (video)[http://channel9.msdn.com/Shows/Going+Deep/Hewitt-Meijer-and-Szyperski-The-Actor-Model-everything-you-wanted-to-know-but-were-afraid-to-ask] if you want more details.
+Make sure you watch the [video](http://channel9.msdn.com/Shows/Going+Deep/Hewitt-Meijer-and-Szyperski-The-Actor-Model-everything-you-wanted-to-know-but-were-afraid-to-ask) if you want more details.
 
 Akka-Kafka Integration
 =====================
