@@ -142,25 +142,6 @@ class Mediator(ctx: RequestContext) {
 }
 ```
 
-Distributiong messages
-=================
-```scala
-  // a message bus to deliver the messages to all interested mediators
-  val messageBus = new ScanningBusImpl()
-
-  def commonBehavior: Actor.Receive = {
-    case Register(listener, classifier) =>
-      messageBus.subscribe(listener, classifier)
-
-    case Deregister(listener) =>
-      messageBus.unsubscribe(listener)
-  }
-
-  def receive = commonBehavior orElse {
-  }
-  
-```
-
 Actor as State machines (2)
 =========================
 how to maintain state
