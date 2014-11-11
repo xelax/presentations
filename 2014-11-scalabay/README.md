@@ -6,9 +6,8 @@ by Alex Cozzi, 2014-11-10
 
 ##Overview of the talk
 
-* Benefits of the queue-based architecture.
-* Actor computation model.
-* Listening to behavioral events.
+* Persistent Queues and the Actor computation model: two great architectures.
+* Analysis of behavioral events and real time processing.
 
 
 Kafka
