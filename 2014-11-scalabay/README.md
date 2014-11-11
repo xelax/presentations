@@ -142,7 +142,7 @@ class Mediator(ctx: RequestContext) {
 }
 ```
 
-Distributiong messages: The [Akka Event Bus](http://doc.akka.io/docs/akka/snapshot/scala/event-bus.html)
+Distributiong messages
 =================
 ```scala
   // a message bus to deliver the messages to all interested mediators
@@ -268,6 +268,7 @@ class PulsarListener extends Actor {
 
 Event Bus Implementation
 ============================
+The [Akka Event Bus](http://doc.akka.io/docs/akka/snapshot/scala/event-bus.html)
 
 ```scala
 class ScanningBusImpl extends ActorEventBus with ScanningClassification with PredicateClassifier {
